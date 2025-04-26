@@ -1,0 +1,4 @@
+{
+  "npm.packageManager": "bun",
+  "git.openRepositoryInParentFolders": "prompt"
+} 
