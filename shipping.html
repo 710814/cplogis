@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배송정보 등록 - CP Logis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .shipping-methods {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .shipping-method {
+            padding: 20px 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 0 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .shipping-method:hover, .shipping-method.active {
+            border-color: #243A73;
+            background-color: #f0f4ff;
+        }
+        
+        .shipping-method.active {
+            box-shadow: 0 5px 15px rgba(36, 58, 115, 0.1);
+        }
+        
+        .shipping-method .icon {
+            font-size: 32px;
+            color: #243A73;
+            margin-bottom: 10px;
+        }
+        
+        .shipping-forms {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .shipping-form {
+            display: none;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .shipping-form.active {
+            display: block;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #243A73;
+            outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        .form-submit {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .file-upload .file-select {
+            display: block;
+            padding: 30px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover .file-select {
+            border-color: #243A73;
+            background-color: #f0f4ff;
+        }
+        
+        .file-upload .file-select .file-select-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #243A73;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .api-config {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .api-config h4 {
+            margin-bottom: 15px;
+        }
+        
+        .code-box {
+            background-color: #243A73;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>CP Logis</h1>
+                <p>국제특송 플랫폼</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">홈</a></li>
+                    <li><a href="shipping.html">배송정보 등록</a></li>
+                    <li><a href="waybill.html">송장 관리</a></li>
+                    <li><a href="tracking.html">배송 추적</a></li>
+                    <li><a href="admin.html">관리자</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>배송정보 등록</h2>
+            <p>개별 등록, 파일 대량 등록, API 자동 연동 방식으로 배송정보와 통관서류를 전송합니다.</p>
+        </div>
+    </section>
+
+    <section class="shipping-content">
+        <div class="container">
+            <div class="shipping-methods">
+                <div class="shipping-method active" data-target="individual-form">
+                    <div class="icon"><i class="fas fa-box"></i></div>
+                    <h3>개별 등록</h3>
+                    <p>배송건 한건씩 등록</p>
+                </div>
+                <div class="shipping-method" data-target="bulk-form">
+                    <div class="icon"><i class="fas fa-boxes"></i></div>
+                    <h3>대량 등록</h3>
+                    <p>파일로 다수건 등록</p>
+                </div>
+                <div class="shipping-method" data-target="api-form">
+                    <div class="icon"><i class="fas fa-exchange-alt"></i></div>
+                    <h3>API 연동</h3>
+                    <p>시스템 자동 연동</p>
+                </div>
+            </div>
+
+            <div class="shipping-forms">
+                <!-- 개별 등록 폼 -->
+                <div class="shipping-form active" id="individual-form">
+                    <h3>개별 배송 등록</h3>
+                    <form>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sender-name">보내는 사람 이름</label>
+                                <input type="text" id="sender-name" name="sender-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sender-phone">보내는 사람 연락처</label>
+                                <input type="tel" id="sender-phone" name="sender-phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sender-address">보내는 사람 주소</label>
+                            <input type="text" id="sender-address" name="sender-address" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recipient-name">받는 사람 이름</label>
+                                <input type="text" id="recipient-name" name="recipient-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-phone">받는 사람 연락처</label>
+                                <input type="tel" id="recipient-phone" name="recipient-phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="recipient-address">받는 사람 주소</label>
+                            <input type="text" id="recipient-address" name="recipient-address" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="destination-country">도착 국가</label>
+                                <select id="destination-country" name="destination-country" required>
+                                    <option value="">국가 선택</option>
+                                    <option value="jp">일본</option>
+                                    <option value="th">태국</option>
+                                    <option value="sg">싱가포르</option>
+                                    <option value="my">말레이시아</option>
+                                    <option value="vn">베트남</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="shipping-company">배송 업체</label>
+                                <select id="shipping-company" name="shipping-company" required>
+                                    <option value="">업체 선택</option>
+                                    <option value="jp-logistics">일본물류사</option>
+                                    <option value="th-logistics">태국물류사</option>
+                                    <option value="sg-logistics">싱가폴물류사</option>
+                                    <option value="my-logistics">말레이시아물류사</option>
+                                    <option value="vn-logistics">베트남물류사</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="package-weight">무게 (kg)</label>
+                                <input type="number" id="package-weight" name="package-weight" min="0.1" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="package-type">포장 유형</label>
+                                <select id="package-type" name="package-type" required>
+                                    <option value="">유형 선택</option>
+                                    <option value="box">박스</option>
+                                    <option value="envelope">봉투</option>
+                                    <option value="pallet">팔레트</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="package-description">배송품 설명</label>
+                            <textarea id="package-description" name="package-description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customs-document">통관 서류 첨부</label>
+                            <div class="file-upload">
+                                <div class="file-select">
+                                    <div class="file-select-button">파일 선택</div>
+                                    <div class="file-select-name">파일을 선택하거나 이곳에 끌어다 놓으세요</div>
+                                    <input type="file" id="customs-document" name="customs-document">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-submit">
+                            <button type="submit" class="btn primary">배송 등록하기</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 대량 등록 폼 -->
+                <div class="shipping-form" id="bulk-form">
+                    <h3>대량 배송 등록</h3>
+                    <p>엑셀 파일을 사용하여 다수의 배송 정보를 한 번에 등록할 수 있습니다. 아래 템플릿을 다운로드하여 사용하세요.</p>
+                    
+                    <div class="template-download">
+                        <a href="#" class="btn secondary"><i class="fas fa-download"></i> 엑셀 템플릿 다운로드</a>
+                    </div>
+                    
+                    <div class="file-upload">
+                        <div class="file-select">
+                            <div class="file-select-button">파일 선택</div>
+                            <div class="file-select-name">작성된 엑셀 파일을 선택하거나 이곳에 끌어다 놓으세요</div>
+                            <input type="file" id="bulk-shipping-file" name="bulk-shipping-file" accept=".xlsx, .xls, .csv">
+                        </div>
+                    </div>
+                    
+                    <div class="form-submit">
+                        <button type="submit" class="btn primary">일괄 등록하기</button>
+                    </div>
+                </div>
+                
+                <!-- API 연동 폼 -->
+                <div class="shipping-form" id="api-form">
+                    <h3>API 연동 설정</h3>
+                    <p>시스템을 연동하여 자동으로 배송정보를 전송할 수 있습니다. 아래 API 정보를 확인하세요.</p>
+                    
+                    <div class="api-config">
+                        <h4>API 엔드포인트</h4>
+                        <div class="code-box">
+                            https://api.cplogis.com/v1/shipping
+                        </div>
+                        
+                        <h4>인증 정보</h4>
+                        <div class="form-group">
+                            <label for="api-key">API 키</label>
+                            <input type="text" id="api-key" value="your-api-key-here" readonly>
+                        </div>
+                        
+                        <h4>요청 예시</h4>
+                        <div class="code-box">
+                            POST /v1/shipping<br>
+                            Content-Type: application/json<br>
+                            Authorization: Bearer your-api-key-here<br><br>
+                            {<br>
+                            &nbsp;&nbsp;"sender": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"name": "홍길동",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"phone": "010-1234-5678",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"address": "서울시 강남구 테헤란로 123"<br>
+                            &nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;"recipient": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"name": "John Doe",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"phone": "+81-1234-5678",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"address": "1-1-1 Shibuya, Tokyo, Japan"<br>
+                            &nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;"package": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"weight": 1.5,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"type": "box",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"description": "의류"<br>
+                            &nbsp;&nbsp;},<br>
+                            &nbsp;&nbsp;"shipping": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"country": "jp",<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"company": "jp-logistics"<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="form-submit">
+                        <a href="#" class="btn primary">API 문서 다운로드</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>CP Logis</h3>
+                    <p>국제특송 플랫폼</p>
+                    <p>서울시 강남구 테헤란로 123</p>
+                    <p>고객센터: 02-123-4567</p>
+                </div>
+                <div class="footer-links">
+                    <h3>바로가기</h3>
+                    <ul>
+                        <li><a href="index.html">홈</a></li>
+                        <li><a href="shipping.html">배송정보 등록</a></li>
+                        <li><a href="waybill.html">송장 관리</a></li>
+                        <li><a href="tracking.html">배송 추적</a></li>
+                        <li><a href="admin.html">관리자</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 CP Logis. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // 배송 방식 선택
+        document.querySelectorAll('.shipping-method').forEach(method => {
+            method.addEventListener('click', function() {
+                // 활성화된 방식 표시
+                document.querySelectorAll('.shipping-method').forEach(m => m.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 해당 폼 표시
+                const targetForm = this.getAttribute('data-target');
+                document.querySelectorAll('.shipping-form').forEach(form => form.classList.remove('active'));
+                document.getElementById(targetForm).classList.add('active');
+            });
+        });
+        
+        // 파일 업로드 표시
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const fileName = this.files[0] ? this.files[0].name : '파일을 선택하거나 이곳에 끌어다 놓으세요';
+                this.closest('.file-upload').querySelector('.file-select-name').textContent = fileName;
+            });
+        });
+    </script>
+</body>
+</html> 

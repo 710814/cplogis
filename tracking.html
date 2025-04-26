@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배송 추적 - CP Logis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-header {
+            background-color: #f0f4ff;
+            padding: 50px 0;
+            text-align: center;
+        }
+        
+        .tracking-search {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        
+        .search-box {
+            display: flex;
+            margin: 30px 0;
+            overflow: hidden;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+        }
+        
+        .search-box button {
+            padding: 0 25px;
+            background-color: #243A73;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box button:hover {
+            background-color: #1A2A55;
+        }
+        
+        .recent-searches {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .recent-searches h3 {
+            font-size: 16px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .recent-searches .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .search-tag {
+            display: inline-block;
+            padding: 5px 15px;
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-tag:hover {
+            background-color: #e9ecef;
+            color: #243A73;
+        }
+        
+        .tracking-result {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 50px;
+            display: none;
+        }
+        
+        .tracking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .tracking-number {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .tracking-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-in-transit {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .shipping-details {
+            display: flex;
+            margin-bottom: 30px;
+            gap: 30px;
+        }
+        
+        .shipping-info {
+            flex: 1;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #243A73;
+        }
+        
+        .info-content {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .info-content p {
+            margin-bottom: 5px;
+        }
+        
+        .tracking-timeline {
+            margin-top: 40px;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #243A73;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 7px;
+            height: 100%;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-point {
+            position: absolute;
+            top: 0;
+            left: -30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #243A73;
+            background-color: white;
+        }
+        
+        .timeline-point.active {
+            background-color: #243A73;
+        }
+        
+        .timeline-content {
+            padding-bottom: 20px;
+        }
+        
+        .timeline-date {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-text {
+            font-weight: 500;
+        }
+        
+        .timeline-location {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .bulk-tracking {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .bulk-tracking h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .bulk-tracking p {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .file-upload .file-select {
+            display: block;
+            padding: 30px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover .file-select {
+            border-color: #243A73;
+            background-color: #f0f4ff;
+        }
+        
+        .file-upload .file-select .file-select-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #243A73;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .bulk-submit {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .toggle-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .toggle-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #e9ecef;
+            color: #243A73;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>CP Logis</h1>
+                <p>국제특송 플랫폼</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">홈</a></li>
+                    <li><a href="shipping.html">배송정보 등록</a></li>
+                    <li><a href="waybill.html">송장 관리</a></li>
+                    <li><a href="tracking.html">배송 추적</a></li>
+                    <li><a href="admin.html">관리자</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>배송 추적</h2>
+            <p>송장번호로 배송현황을 실시간으로 조회할 수 있습니다.</p>
+        </div>
+    </section>
+
+    <section class="tracking-search">
+        <div class="container">
+            <h3>송장번호로 조회하기</h3>
+            <div class="search-box">
+                <input type="text" id="tracking-input" placeholder="송장번호를 입력하세요">
+                <button onclick="showTrackingResult()"><i class="fas fa-search"></i> 조회</button>
+            </div>
+            <div class="recent-searches">
+                <h3>최근 조회 내역</h3>
+                <div class="search-tags">
+                    <div class="search-tag" onclick="fillTracking('JP1234567890')">JP1234567890</div>
+                    <div class="search-tag" onclick="fillTracking('TH9876543210')">TH9876543210</div>
+                    <div class="search-tag" onclick="fillTracking('SG2468135790')">SG2468135790</div>
+                </div>
+            </div>
+            
+            <div class="toggle-section">
+                <a href="#bulk-tracking" class="toggle-btn" onclick="toggleBulkSection()">
+                    <i class="fas fa-file-upload"></i> 대량 배송조회 전환하기
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="tracking-result" id="tracking-result">
+        <div class="tracking-header">
+            <div>
+                <div class="tracking-number">송장번호: JP1234567890</div>
+                <div class="tracking-company">배송업체: 일본물류사</div>
+            </div>
+            <div class="tracking-status status-in-transit">배송 중</div>
+        </div>
+        
+        <div class="shipping-details">
+            <div class="shipping-info">
+                <div class="info-title">발송 정보</div>
+                <div class="info-content">
+                    <p><strong>보내는 사람:</strong> 홍길동</p>
+                    <p><strong>출발지:</strong> 대한민국</p>
+                    <p><strong>발송일:</strong> 2023-06-01</p>
+                </div>
+            </div>
+            <div class="shipping-info">
+                <div class="info-title">배송 정보</div>
+                <div class="info-content">
+                    <p><strong>받는 사람:</strong> John Doe</p>
+                    <p><strong>도착지:</strong> 일본</p>
+                    <p><strong>예상 도착일:</strong> 2023-06-05</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tracking-timeline">
+            <div class="timeline-title">배송 현황</div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-point active"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023-06-03 14:30</div>
+                        <div class="timeline-text">해외 물류센터 도착</div>
+                        <div class="timeline-location">도쿄 국제 물류센터</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-point active"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023-06-02 09:15</div>
+                        <div class="timeline-text">국제 운송 중</div>
+                        <div class="timeline-location">인천 → 도쿄</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-point active"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023-06-01 16:45</div>
+                        <div class="timeline-text">물류센터 출발</div>
+                        <div class="timeline-location">인천 국제 물류센터</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-point active"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023-06-01 11:20</div>
+                        <div class="timeline-text">접수 완료</div>
+                        <div class="timeline-location">서울 물류센터</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="bulk-tracking" id="bulk-tracking" style="display: none;">
+        <h3>대량 배송 조회</h3>
+        <p>여러 송장번호를 한 번에 조회하려면 파일을 업로드하세요.</p>
+        <p>CSV 또는 Excel 형식의 파일에 송장번호를 포함하여 업로드하면 결과를 다운로드할 수 있습니다.</p>
+        
+        <div class="file-upload">
+            <div class="file-select">
+                <div class="file-select-button">파일 선택</div>
+                <div class="file-select-name">파일을 선택하거나 이곳에 끌어다 놓으세요</div>
+                <input type="file" id="bulk-tracking-file" accept=".xlsx, .xls, .csv">
+            </div>
+        </div>
+        
+        <div class="bulk-submit">
+            <button class="btn primary">배송 조회하기</button>
+        </div>
+        
+        <div class="toggle-section">
+            <a href="#tracking-search" class="toggle-btn" onclick="toggleBulkSection()">
+                <i class="fas fa-search"></i> 개별 배송조회 전환하기
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>CP Logis</h3>
+                    <p>국제특송 플랫폼</p>
+                    <p>서울시 강남구 테헤란로 123</p>
+                    <p>고객센터: 02-123-4567</p>
+                </div>
+                <div class="footer-links">
+                    <h3>바로가기</h3>
+                    <ul>
+                        <li><a href="index.html">홈</a></li>
+                        <li><a href="shipping.html">배송정보 등록</a></li>
+                        <li><a href="waybill.html">송장 관리</a></li>
+                        <li><a href="tracking.html">배송 추적</a></li>
+                        <li><a href="admin.html">관리자</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 CP Logis. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function showTrackingResult() {
+            const trackingNumber = document.getElementById('tracking-input').value.trim();
+            if (trackingNumber) {
+                document.getElementById('tracking-result').style.display = 'block';
+                // 여기에 실제로는 AJAX로 서버에서 데이터를 가져오는 로직이 들어갈 수 있습니다.
+                
+                // 스크롤 이동
+                document.getElementById('tracking-result').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert('송장번호를 입력하세요.');
+            }
+        }
+        
+        function fillTracking(trackingNumber) {
+            document.getElementById('tracking-input').value = trackingNumber;
+            showTrackingResult();
+        }
+        
+        function toggleBulkSection() {
+            const bulkSection = document.getElementById('bulk-tracking');
+            const trackingResult = document.getElementById('tracking-result');
+            
+            if (bulkSection.style.display === 'none') {
+                bulkSection.style.display = 'block';
+                trackingResult.style.display = 'none';
+            } else {
+                bulkSection.style.display = 'none';
+            }
+        }
+        
+        // 파일 업로드 표시
+        document.getElementById('bulk-tracking-file').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : '파일을 선택하거나 이곳에 끌어다 놓으세요';
+            this.closest('.file-upload').querySelector('.file-select-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html> 

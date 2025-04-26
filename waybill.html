@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>송장 관리 - CP Logis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-header {
+            background-color: #f0f4ff;
+            padding: 50px 0;
+            text-align: center;
+        }
+        
+        .page-content {
+            padding: 50px 0;
+        }
+        
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .filter-group input, .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .waybill-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #243A73;
+        }
+        
+        tr:hover {
+            background-color: #f0f4ff;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.received {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status.printed {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .print-btn {
+            background-color: #243A73;
+            color: white;
+        }
+        
+        .print-btn:hover {
+            background-color: #1A2A55;
+        }
+        
+        .view-btn {
+            background-color: #f8f9fa;
+            color: #243A73;
+            border: 1px solid #243A73;
+        }
+        
+        .view-btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
+        }
+        
+        .pagination a {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination a:hover, .pagination a.active {
+            background-color: #243A73;
+            color: white;
+        }
+        
+        /* 송장 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: #243A73;
+        }
+        
+        .waybill-preview {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .waybill-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>CP Logis</h1>
+                <p>국제특송 플랫폼</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">홈</a></li>
+                    <li><a href="shipping.html">배송정보 등록</a></li>
+                    <li><a href="waybill.html">송장 관리</a></li>
+                    <li><a href="tracking.html">배송 추적</a></li>
+                    <li><a href="admin.html">관리자</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>송장 관리</h2>
+            <p>해외물류사로부터 수신된 송장정보를 관리하고 프린트할 수 있습니다.</p>
+        </div>
+    </section>
+
+    <section class="page-content">
+        <div class="container">
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="tracking-number">송장번호</label>
+                        <input type="text" id="tracking-number" placeholder="송장번호 입력">
+                    </div>
+                    <div class="filter-group">
+                        <label for="destination">도착 국가</label>
+                        <select id="destination">
+                            <option value="">전체</option>
+                            <option value="jp">일본</option>
+                            <option value="th">태국</option>
+                            <option value="sg">싱가포르</option>
+                            <option value="my">말레이시아</option>
+                            <option value="vn">베트남</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="status">상태</label>
+                        <select id="status">
+                            <option value="">전체</option>
+                            <option value="pending">대기중</option>
+                            <option value="received">수신완료</option>
+                            <option value="printed">프린트완료</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="date-from">등록일 시작</label>
+                        <input type="date" id="date-from">
+                    </div>
+                    <div class="filter-group">
+                        <label for="date-to">등록일 종료</label>
+                        <input type="date" id="date-to">
+                    </div>
+                    <div class="filter-group">
+                        <label for="company">배송 업체</label>
+                        <select id="company">
+                            <option value="">전체</option>
+                            <option value="jp-logistics">일본물류사</option>
+                            <option value="th-logistics">태국물류사</option>
+                            <option value="sg-logistics">싱가폴물류사</option>
+                            <option value="my-logistics">말레이시아물류사</option>
+                            <option value="vn-logistics">베트남물류사</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn secondary">초기화</button>
+                    <button class="btn primary">검색</button>
+                </div>
+            </div>
+
+            <div class="waybill-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>송장번호</th>
+                            <th>도착 국가</th>
+                            <th>배송 업체</th>
+                            <th>받는 사람</th>
+                            <th>등록일</th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>JP1234567890</td>
+                            <td>일본</td>
+                            <td>일본물류사</td>
+                            <td>John Doe</td>
+                            <td>2023-06-01</td>
+                            <td><span class="status received">수신완료</span></td>
+                            <td class="actions">
+                                <a href="#" class="action-btn print-btn" onclick="openModal('waybill-modal')">인쇄</a>
+                                <a href="#" class="action-btn view-btn" onclick="openModal('waybill-modal')">보기</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>TH9876543210</td>
+                            <td>태국</td>
+                            <td>태국물류사</td>
+                            <td>Jane Smith</td>
+                            <td>2023-06-02</td>
+                            <td><span class="status printed">프린트완료</span></td>
+                            <td class="actions">
+                                <a href="#" class="action-btn print-btn" onclick="openModal('waybill-modal')">재인쇄</a>
+                                <a href="#" class="action-btn view-btn" onclick="openModal('waybill-modal')">보기</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SG2468135790</td>
+                            <td>싱가포르</td>
+                            <td>싱가폴물류사</td>
+                            <td>Sam Lee</td>
+                            <td>2023-06-03</td>
+                            <td><span class="status pending">대기중</span></td>
+                            <td class="actions">
+                                <a href="#" class="action-btn view-btn" onclick="openModal('waybill-modal')">보기</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>MY1357924680</td>
+                            <td>말레이시아</td>
+                            <td>말레이시아물류사</td>
+                            <td>Wong Kim</td>
+                            <td>2023-06-04</td>
+                            <td><span class="status received">수신완료</span></td>
+                            <td class="actions">
+                                <a href="#" class="action-btn print-btn" onclick="openModal('waybill-modal')">인쇄</a>
+                                <a href="#" class="action-btn view-btn" onclick="openModal('waybill-modal')">보기</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>VN9753102468</td>
+                            <td>베트남</td>
+                            <td>베트남물류사</td>
+                            <td>Tran Nguyen</td>
+                            <td>2023-06-05</td>
+                            <td><span class="status received">수신완료</span></td>
+                            <td class="actions">
+                                <a href="#" class="action-btn print-btn" onclick="openModal('waybill-modal')">인쇄</a>
+                                <a href="#" class="action-btn view-btn" onclick="openModal('waybill-modal')">보기</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a href="#">&laquo;</a>
+                <a href="#" class="active">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">4</a>
+                <a href="#">5</a>
+                <a href="#">&raquo;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 송장 모달 -->
+    <div class="modal" id="waybill-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>송장 정보 - JP1234567890</h3>
+                <span class="close-btn" onclick="closeModal('waybill-modal')">&times;</span>
+            </div>
+            <div class="waybill-preview">
+                <div style="text-align: center; border: 1px dashed #ddd; padding: 20px;">
+                    <h4 style="margin-bottom: 20px;">일본물류사</h4>
+                    <div style="font-size: 16px; margin-bottom: 10px; font-weight: bold;">
+                        송장번호: JP1234567890
+                    </div>
+                    <div style="display: inline-block; width: 150px; height: 50px; background-color: #eee; margin-bottom: 20px;">
+                        [바코드 영역]
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <div style="width: 48%; text-align: left; border: 1px solid #eee; padding: 10px;">
+                            <strong>발송인</strong><br>
+                            홍길동<br>
+                            010-1234-5678<br>
+                            서울시 강남구 테헤란로 123
+                        </div>
+                        <div style="width: 48%; text-align: left; border: 1px solid #eee; padding: 10px;">
+                            <strong>수취인</strong><br>
+                            John Doe<br>
+                            +81-1234-5678<br>
+                            1-1-1 Shibuya, Tokyo, Japan
+                        </div>
+                    </div>
+                    <div style="text-align: left; border: 1px solid #eee; padding: 10px; margin-bottom: 20px;">
+                        <strong>배송 정보</strong><br>
+                        상품: 의류<br>
+                        중량: 1.5kg<br>
+                        포장: 박스<br>
+                        배송 형태: 국제특송
+                    </div>
+                    <div style="font-size: 12px; color: #666;">
+                        배송에 관한 문의는 고객센터(02-123-4567)로 연락주세요.
+                    </div>
+                </div>
+            </div>
+            <div class="waybill-actions">
+                <button class="btn primary">인쇄하기</button>
+                <button class="btn secondary" onclick="closeModal('waybill-modal')">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>CP Logis</h3>
+                    <p>국제특송 플랫폼</p>
+                    <p>서울시 강남구 테헤란로 123</p>
+                    <p>고객센터: 02-123-4567</p>
+                </div>
+                <div class="footer-links">
+                    <h3>바로가기</h3>
+                    <ul>
+                        <li><a href="index.html">홈</a></li>
+                        <li><a href="shipping.html">배송정보 등록</a></li>
+                        <li><a href="waybill.html">송장 관리</a></li>
+                        <li><a href="tracking.html">배송 추적</a></li>
+                        <li><a href="admin.html">관리자</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 CP Logis. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // 모달 열기
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        // 모달 닫기
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // ESC 키로 모달 닫기
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
